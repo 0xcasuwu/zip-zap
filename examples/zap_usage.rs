@@ -73,7 +73,7 @@ fn main() {
     println!("   Minimum LP tokens: {}", min_lp_tokens);
     println!("   Deadline: {}", deadline);
 
-    match zap.zap_into_lp(
+    match zap.zap_into_l_p(
         input_token,
         input_amount,
         target_token_a,

@@ -44,7 +44,7 @@ mod zap_tests {
         let token_a = create_test_alkane_id(1, 1);
         let token_b = create_test_alkane_id(2, 2);
         
-        let reserves = PoolReserves::new(token_a, token_b, 1000, 2000, 1414);
+        let reserves = PoolReserves::new(token_a, token_b, 1000, 2000, 1414, 50);
         
         assert_eq!(reserves.get_reserve_for_token(&token_a), Some(1000));
         assert_eq!(reserves.get_reserve_for_token(&token_b), Some(2000));
@@ -81,7 +81,8 @@ mod zap_tests {
             create_test_alkane_id(3, 3),
         ];
         
-        let finder = RouteFinder::new(factory_id).with_base_tokens(base_tokens.clone());
+        let pool_provider = MockPoolProvider::new();
+        let finder = RouteFinder::new(factory_id, &pool_provider).with_base_tokens(base_tokens.clone());
         
         assert_eq!(finder.oyl_factory_id, factory_id);
         assert_eq!(finder.common_base_tokens, base_tokens);
@@ -99,6 +100,7 @@ mod zap_tests {
                 0,
                 0,
                 0,
+                50
             ),
         );
         assert!(result.is_ok());
@@ -114,6 +116,7 @@ mod zap_tests {
                 1000000,
                 2000000,
                 1414213,
+                50
             ),
         );
         assert!(result.is_ok());
@@ -137,5 +140,36 @@ mod zap_tests {
         assert_eq!(MAX_HOPS, 3);
         assert_eq!(BASIS_POINTS, 10000);
         assert_eq!(MINIMUM_LIQUIDITY, 1000);
+    }
+}
+
+// MockPoolProvider for testing RouteFinder
+use oyl_zap_core::pool_provider::PoolProvider;
+use std::collections::HashMap;
+use anyhow::{anyhow, Result};
+use alkanes_support::id::AlkaneId;
+use oyl_zap_core::types::PoolReserves;
+
+struct MockPoolProvider {
+    pools: HashMap<(AlkaneId, AlkaneId), PoolReserves>,
+}
+
+impl MockPoolProvider {
+    fn new() -> Self {
+        Self {
+            pools: HashMap::new(),
+        }
+    }
+}
+
+impl PoolProvider for MockPoolProvider {
+    fn get_pool_reserves(&self, token_a: AlkaneId, token_b: AlkaneId) -> Result<PoolReserves> {
+        let key1 = (token_a, token_b);
+        let key2 = (token_b, token_a);
+        self.pools.get(&key1).or_else(|| self.pools.get(&key2)).cloned().ok_or_else(|| anyhow!("Pool not found"))
+    }
+
+    fn get_connected_tokens(&self, _token: AlkaneId) -> Result<Vec<AlkaneId>> {
+        Ok(vec![])
     }
 }

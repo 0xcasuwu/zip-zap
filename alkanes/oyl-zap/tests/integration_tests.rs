@@ -5,6 +5,7 @@
 
 mod common;
 use common::*;
+mod direct_contribution_tests;
 
 #[test]
 fn test_complex_multi_step_zap_operations() -> anyhow::Result<()> {
