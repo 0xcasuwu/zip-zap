@@ -200,8 +200,8 @@ pub trait OylZapBase: AlkaneResponder {
 
         // Return LP tokens to user
         if lp_tokens_received > 0 {
-            // Simplified for testing - use mock pool ID
-            let pool_id = AlkaneId { block: target_token_a.block + target_token_b.block, tx: target_token_a.tx + target_token_b.tx };
+            let factory_id = self.factory_id()?;
+            let pool_id = self.find_pool_id(factory_id, target_token_a, target_token_b)?;
             
             response.alkanes.0.push(AlkaneTransfer {
                 id: pool_id, // LP tokens have the same ID as the pool
@@ -229,9 +229,10 @@ pub trait OylZapBase: AlkaneResponder {
             max_slippage_bps,
         )?;
 
-        let _quote_bytes = self.serialize_zap_quote(&quote)?;
-        // Simplified for testing - return forward response
-        Ok(CallResponse::forward(&AlkaneTransferParcel::default()))
+        let quote_bytes = self.serialize_zap_quote(&quote)?;
+        let mut response = CallResponse::forward(&AlkaneTransferParcel::default());
+        response.data = quote_bytes;
+        Ok(response)
     }
 
     fn find_optimal_route(
@@ -240,8 +241,7 @@ pub trait OylZapBase: AlkaneResponder {
         to_token: AlkaneId,
         amount: u128,
     ) -> Result<CallResponse> {
-        // Simplified for testing - use mock factory ID
-        let factory_id = AlkaneId { block: 1, tx: 0 };
+        let factory_id = self.factory_id()?;
         let base_tokens = self.get_base_tokens_internal()?;
         let pool_provider = ContractPoolProvider { contract: self };
         
@@ -323,8 +323,7 @@ pub trait OylZapBase: AlkaneResponder {
         target_token_b: AlkaneId,
         max_slippage_bps: u128,
     ) -> Result<ZapQuote> {
-        // Simplified for testing - use mock factory ID
-        let factory_id = AlkaneId { block: 1, tx: 0 };
+        let factory_id = self.factory_id()?;
         let base_tokens = self.get_base_tokens_internal()?;
         let pool_provider = ContractPoolProvider { contract: self };
         
@@ -670,8 +669,7 @@ pub trait OylZapBase: AlkaneResponder {
         // Extract LP tokens from response
         let mut lp_tokens_received = 0u128;
         
-        // Simplified for testing - use mock pool ID
-        let pool_id = AlkaneId { block: token_a.block + token_b.block, tx: token_a.tx + token_b.tx };
+        let pool_id = self.find_pool_id(factory_id, token_a, token_b)?;
         
         for transfer in &response.alkanes.0 {
             if transfer.id == pool_id {

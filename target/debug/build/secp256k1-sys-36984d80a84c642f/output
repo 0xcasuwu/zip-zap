@@ -1,4 +1,4 @@
-OUT_DIR = Some(/data/projects/zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
+OUT_DIR = Some(/data/projects/zip-zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
 OPT_LEVEL = Some(0)
 TARGET = Some(x86_64-unknown-linux-gnu)
 HOST = Some(x86_64-unknown-linux-gnu)
@@ -25,7 +25,7 @@ CFLAGS_x86_64_unknown_linux_gnu = None
 cargo:rerun-if-env-changed=CFLAGS_x86_64-unknown-linux-gnu
 CFLAGS_x86_64-unknown-linux-gnu = None
 CARGO_ENCODED_RUSTFLAGS = Some()
-OUT_DIR = Some(/data/projects/zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
+OUT_DIR = Some(/data/projects/zip-zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
 cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
 cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
 CRATE_CC_NO_DEFAULTS = None
@@ -40,7 +40,7 @@ cargo:rerun-if-env-changed=CFLAGS_x86_64_unknown_linux_gnu
 CFLAGS_x86_64_unknown_linux_gnu = None
 cargo:rerun-if-env-changed=CFLAGS_x86_64-unknown-linux-gnu
 CFLAGS_x86_64-unknown-linux-gnu = None
-OUT_DIR = Some(/data/projects/zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
+OUT_DIR = Some(/data/projects/zip-zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out)
 cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
 cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
 CRATE_CC_NO_DEFAULTS = None
@@ -72,4 +72,4 @@ ARFLAGS_x86_64_unknown_linux_gnu = None
 cargo:rerun-if-env-changed=ARFLAGS_x86_64-unknown-linux-gnu
 ARFLAGS_x86_64-unknown-linux-gnu = None
 cargo:rustc-link-lib=static=secp256k1
-cargo:rustc-link-search=native=/data/projects/zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out
+cargo:rustc-link-search=native=/data/projects/zip-zap/target/debug/build/secp256k1-sys-36984d80a84c642f/out
