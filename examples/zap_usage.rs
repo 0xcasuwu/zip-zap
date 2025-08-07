@@ -7,7 +7,7 @@
 //! 4. Manage base tokens
 
 use alkanes_support::id::AlkaneId;
-use oyl_zap_core::{types::*, OylZapBase, OylZap};
+use oyl_zap_core::{types::*, ZapBase, OylZap};
 
 fn main() {
     println!("OYL Zap Contract Usage Example");
@@ -32,7 +32,7 @@ fn main() {
     let mut zap = OylZap::default();
 
     // Initialize the zap contract (this would be done via message dispatch in practice)
-    match zap.init_zap(oyl_factory_id, base_tokens.clone()) {
+    match zap.initialize(oyl_factory_id, base_tokens.clone()) {
         Ok(_) => println!("   ✓ Zap contract initialized successfully"),
         Err(e) => println!("   ✗ Failed to initialize: {}", e),
     }
@@ -55,13 +55,13 @@ fn main() {
     println!("\n3. Finding Optimal Routes");
     
     // Find route from USDC to target token A
-    match zap.find_optimal_route(input_token, target_token_a, input_amount / 2) {
+    match zap.get_best_route(input_token, target_token_a, input_amount / 2) {
         Ok(_) => println!("   ✓ Route A found: {:?} -> {:?}", input_token, target_token_a),
         Err(e) => println!("   ✗ Failed to find route A: {}", e),
     }
 
     // Find route from USDC to target token B
-    match zap.find_optimal_route(input_token, target_token_b, input_amount / 2) {
+    match zap.get_best_route(input_token, target_token_b, input_amount / 2) {
         Ok(_) => println!("   ✓ Route B found: {:?} -> {:?}", input_token, target_token_b),
         Err(e) => println!("   ✗ Failed to find route B: {}", e),
     }
@@ -73,50 +73,31 @@ fn main() {
     println!("   Minimum LP tokens: {}", min_lp_tokens);
     println!("   Deadline: {}", deadline);
 
-    match zap.zap_into_l_p(
+    match zap.execute_zap(
         input_token,
         input_amount,
         target_token_a,
         target_token_b,
         min_lp_tokens,
         deadline,
+        max_slippage_bps,
     ) {
         Ok(_) => println!("   ✓ Zap executed successfully!"),
         Err(e) => println!("   ✗ Zap execution failed: {}", e),
     }
 
-    println!("\n5. Managing Base Tokens");
+    println!("\n5. Getting Pool Reserves");
     
-    // Add a new base token
-    let new_base_token = AlkaneId { block: 7, tx: 7 };
-    match zap.add_base_token(new_base_token) {
-        Ok(_) => println!("   ✓ Added base token: {:?}", new_base_token),
-        Err(e) => println!("   ✗ Failed to add base token: {}", e),
+    // Get pool reserves for the target pair
+    match zap.get_pool_reserves(target_token_a, target_token_b) {
+        Ok(_) => println!("   ✓ Retrieved pool reserves for {:?} / {:?}", target_token_a, target_token_b),
+        Err(e) => println!("   ✗ Failed to get pool reserves: {}", e),
     }
 
-    // Get current base tokens
-    match zap.get_base_tokens() {
-        Ok(_) => println!("   ✓ Retrieved current base tokens"),
-        Err(e) => println!("   ✗ Failed to get base tokens: {}", e),
-    }
-
-    // Remove a base token
-    match zap.remove_base_token(new_base_token) {
-        Ok(_) => println!("   ✓ Removed base token: {:?}", new_base_token),
-        Err(e) => println!("   ✗ Failed to remove base token: {}", e),
-    }
-
-    println!("\n6. Getting Configuration");
-    match zap.get_zap_config() {
-        Ok(_) => println!("   ✓ Retrieved zap configuration"),
-        Err(e) => println!("   ✗ Failed to get configuration: {}", e),
-    }
-
-    println!("\n7. Updating Factory");
-    let new_factory_id = AlkaneId { block: 10, tx: 10 };
-    match zap.set_oyl_factory(new_factory_id) {
-        Ok(_) => println!("   ✓ Updated factory to: {:?}", new_factory_id),
-        Err(e) => println!("   ✗ Failed to update factory: {}", e),
+    println!("\n6. Forward Call Example");
+    match zap.forward() {
+        Ok(_) => println!("   ✓ Forward call executed successfully"),
+        Err(e) => println!("   ✗ Forward call failed: {}", e),
     }
 
     println!("\nExample completed!");

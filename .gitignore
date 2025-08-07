@@ -6,6 +6,7 @@
 /alkanes/release/
 /alkanes/.rustc_info.json
 
+/src/precompiled
 # Lockfile
 Cargo.lock
 
