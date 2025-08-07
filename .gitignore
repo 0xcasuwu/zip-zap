@@ -1,0 +1,14 @@
+# Rust target directory
+/target/
+
+# Alkane build artifacts
+/alkanes/target/
+/alkanes/release/
+/alkanes/.rustc_info.json
+
+# Lockfile
+Cargo.lock
+
+# Local build files
+build_log.txt
+debug_build.sh
