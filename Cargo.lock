@@ -1230,6 +1230,7 @@ dependencies = [
  "num",
  "ordinals 0.5.2",
  "oyl-zap-core",
+ "protobuf 3.7.2",
  "protorune",
  "protorune-support",
  "ruint",

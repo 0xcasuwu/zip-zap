@@ -1,3 +1,7 @@
+// Integration tests with indexer (similar to boiler testing suite)
+pub mod zap_integration_test;
+pub mod test_runner;
+
 #[cfg(test)]
 mod zap_tests {
     use super::*;
