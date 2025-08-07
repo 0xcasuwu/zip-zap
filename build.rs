@@ -14,43 +14,44 @@ fn compress(binary: Vec<u8>) -> Result<Vec<u8>> {
     Ok(writer.finish()?)
 }
 
-fn build_alkane(
-    alkane_dir: &Path,
-    features: Vec<&'static str>,
-) -> Result<()> {
-    let mut command = Command::new("cargo");
-    command
-        .current_dir(alkane_dir)
-        .arg("build")
-        .arg("--release")
-        .arg("--target=wasm32-unknown-unknown");
-
-    if !features.is_empty() {
-        command.arg("--features").arg(features.join(","));
-    }
-
-    let status = command
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .status()?;
-
-    if status.success() {
+fn build_alkane(wasm_str: &str, features: Vec<&'static str>) -> Result<()> {
+    if features.len() != 0 {
+        let _ = Command::new("cargo")
+            .env("CARGO_TARGET_DIR", wasm_str)
+            .arg("build")
+            .arg("--release")
+            .arg("--target=wasm32-unknown-unknown")
+            .arg("--features")
+            .arg(features.join(","))
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()?
+            .wait()?;
         Ok(())
     } else {
-        Err(anyhow::anyhow!(
-            "Failed to build alkane in {:?}",
-            alkane_dir
-        ))
+        Command::new("cargo")
+            .env("CARGO_TARGET_DIR", wasm_str)
+            .arg("build")
+            .arg("--release")
+            .arg("--target=wasm32-unknown-unknown")
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()?
+            .wait()?;
+        Ok(())
     }
 }
 
 fn main() {
     let manifest_dir_string = env::var("CARGO_MANIFEST_DIR").unwrap();
     let manifest_dir = Path::new(&manifest_dir_string);
-    let wasm_dir = manifest_dir.join("target");
+    let wasm_dir = manifest_dir.join("target").join("alkanes");
+    fs::create_dir_all(&wasm_dir).unwrap();
+    let wasm_str = wasm_dir.to_str().unwrap();
     let write_dir = manifest_dir.join("src").join("precompiled");
     fs::create_dir_all(&write_dir).unwrap();
     let crates_dir = manifest_dir.join("alkanes");
+    
     let mods = fs::read_dir(&crates_dir)
         .unwrap()
         .filter_map(|entry_res| {
@@ -74,14 +75,17 @@ fn main() {
             Some(name)
         })
         .collect::<Vec<String>>();
-    files
-        .into_iter()
+    files.into_iter()
         .map(|v| -> Result<String> {
             let alkane_path = crates_dir.join(&v);
-            if let Err(e) = build_alkane(&alkane_path, vec![]) {
+            let initial_dir = std::env::current_dir()?;
+            std::env::set_current_dir(&alkane_path)?;
+            if let Err(e) = build_alkane(wasm_str, vec![]) {
                 eprintln!("Failed to build alkane {}: {}", v, e);
+                std::env::set_current_dir(&initial_dir)?;
                 return Err(e);
             }
+            std::env::set_current_dir(&initial_dir)?;
             let subbed = v.replace("-", "_");
             eprintln!(
                 "write: {}",
@@ -91,17 +95,17 @@ fn main() {
                     .to_str()
                     .unwrap()
             );
-            let wasm_path = wasm_dir
+            let wasm_path = Path::new(&wasm_str)
                 .join("wasm32-unknown-unknown")
                 .join("release")
-                .join(subbed.clone() + ".wasm");
+                .join(subbed.clone().replace("oyl_zap", "oyl_zap_core") + ".wasm");
             if !wasm_path.exists() {
                 return Err(anyhow::anyhow!("WASM file not found: {:?}", wasm_path));
             }
             let f: Vec<u8> = fs::read(&wasm_path)?;
             let compressed: Vec<u8> = compress(f.clone())?;
             fs::write(
-                &wasm_dir
+                &Path::new(&wasm_str)
                     .join("wasm32-unknown-unknown")
                     .join("release")
                     .join(subbed.clone() + ".wasm.gz"),
